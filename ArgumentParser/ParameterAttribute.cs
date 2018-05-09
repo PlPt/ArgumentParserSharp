@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace ArgumentParser
 {
     [AttributeUsage(AttributeTargets.Parameter)]
-   public  class ParameterAttribute : Attribute
+   public  class ParameterInfoAttribute : Attribute
     {
         public string Command { get; set; }
         public long MaxValue { get; set; } = long.MaxValue;

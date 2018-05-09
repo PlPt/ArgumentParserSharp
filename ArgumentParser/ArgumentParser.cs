@@ -82,7 +82,7 @@ namespace ArgumentParser
         #region ValidateParameterRestrictions
         private static void ValidateParameterRestrictions(object input, ParameterInfo p)
         {
-            ParameterAttribute parameterAttribute = p.GetCustomAttribute<ParameterAttribute>();
+            ParameterInfoAttributeAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttributeAttribute>();
             if (parameterAttribute != null && input.IsNumericType())
             {
                 if (Convert.ToDecimal(input) > parameterAttribute.MaxValue)
@@ -101,7 +101,7 @@ namespace ArgumentParser
         #region ParseArray
         private object ParseArray(GroupCollection value, ParameterInfo p,ref int idx)
         {
-            ParameterAttribute parameterAttribute = p.GetCustomAttribute<ParameterAttribute>();
+            ParameterInfoAttributeAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttributeAttribute>();
             ArrayList list = new ArrayList();            
             for (int i = 0; i < parameterAttribute.ArrayLenght; i++)
             {
