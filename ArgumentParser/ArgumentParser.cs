@@ -47,23 +47,24 @@ namespace ArgumentParser
             var groups = match.Groups;
             var param = meth.GetParameters();
 
-          /*  if (groups.Count - 1 != param.Length)
+            if (groups.Count - 1 != param.Length && !param.Any(p=>p.ParameterType.IsArray))
             {
                 return default(T);
-            }*/
+            }
 
             int idx = 0;
+            int groupOffset = 0;
             object[] parameters = new object[param.Length];
             foreach (var p in param)
             {
 
                 if (p.ParameterType.IsArray)
                 {
-                    parameters[idx] = ParseArray(groups, p,ref idx);
+                    parameters[idx] = ParseArray(groups, p,idx,ref groupOffset);
                 }
                 else
                 {
-                    parameters[idx] = ParseValue(groups[idx + 1].Value, p.ParameterType);
+                    parameters[idx] = ParseValue(groups[idx+ groupOffset + 1].Value, p.ParameterType);
 
                     ValidateParameterRestrictions(parameters[idx], p);
                 }
@@ -73,16 +74,14 @@ namespace ArgumentParser
             }
 
 
-            return (T)meth.Invoke(this.argumentObject, parameters);
-
-            //return "";
+            return (T)meth.Invoke(this.argumentObject, parameters);        
         }
         #endregion
 
         #region ValidateParameterRestrictions
         private static void ValidateParameterRestrictions(object input, ParameterInfo p)
         {
-            ParameterInfoAttributeAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttributeAttribute>();
+            ParameterInfoAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttribute>();
             if (parameterAttribute != null && input.IsNumericType())
             {
                 if (Convert.ToDecimal(input) > parameterAttribute.MaxValue)
@@ -99,9 +98,9 @@ namespace ArgumentParser
 
 
         #region ParseArray
-        private object ParseArray(GroupCollection value, ParameterInfo p,ref int idx)
+        private object ParseArray(GroupCollection value, ParameterInfo p,int idx,ref int groupOffset)
         {
-            ParameterInfoAttributeAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttributeAttribute>();
+            ParameterInfoAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttribute>();
             ArrayList list = new ArrayList();            
             for (int i = 0; i < parameterAttribute.ArrayLenght; i++)
             {
@@ -109,7 +108,7 @@ namespace ArgumentParser
                 ValidateParameterRestrictions(parsedValue, p);
                 list.Add(parsedValue);
             }
-            idx += parameterAttribute.ArrayLenght;            
+            groupOffset += parameterAttribute.ArrayLenght-1;            
             return (object)list.ToArray(p.ParameterType.GetElementType());            
         }
         #endregion
