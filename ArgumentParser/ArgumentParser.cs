@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace ArgumentParser
 {
+
+    /// <summary>
+    /// Class for parsing TerminalInput Arguments and call defined Method in a Object with it's parameters
+    /// </summary>
     public class ArgumentParser
     {
 
@@ -164,35 +168,4 @@ namespace ArgumentParser
         #endregion
     }
 
-    public class TypeSwitch
-    {
-
-        Dictionary<Type, Func<string, object>> matches = new Dictionary<Type, Func<string, object>>();
-        public TypeSwitch Case<T>(Func<string, object> action) { matches.Add(typeof(T), (x) => { return action(x); }); return this; }
-        public object Switch(Type x, string input) { return matches[x](input); }
-    }
-
-    public static class Helper
-    {
-        public static bool IsNumericType(this object o)
-        {
-            switch (Type.GetTypeCode(o.GetType()))
-            {
-                case TypeCode.Byte:
-                case TypeCode.SByte:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                case TypeCode.UInt64:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
-                case TypeCode.Decimal:
-                case TypeCode.Double:
-                case TypeCode.Single:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    }
 }
