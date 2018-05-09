@@ -21,6 +21,10 @@ namespace ArgumentParser
         #endregion
 
         #region constructor
+        /// <summary>
+        /// Instantiates a new ArgumentParser Object with it's ArgumentObject parameter
+        /// </summary>
+        /// <param name="argumentObject">Object instance which contains public methods with <see cref="CommandAttribute"/> for Regex Command definition</param>
         public ArgumentParser(object argumentObject)
         {
             this.argumentObject = argumentObject;
@@ -28,6 +32,12 @@ namespace ArgumentParser
         #endregion
 
         #region Parse
+        /// <summary>
+        /// Parses an generic String command and executes the defined Method behind
+        /// </summary>
+        /// <typeparam name="T">Type of Returnobject</typeparam>
+        /// <param name="command">Command input for parse</param>
+        /// <returns></returns>
         public T Parse<T>(string command)
         {
             MethodInfo meth = GetMatchingMethod(command);
@@ -164,7 +174,6 @@ namespace ArgumentParser
 
             return parsedValue;
         }
-
         #endregion
     }
 
