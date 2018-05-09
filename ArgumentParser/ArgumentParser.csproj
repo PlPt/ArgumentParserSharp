@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentParser.cs" />
+    <Compile Include="ArgumentParserException.cs" />
     <Compile Include="ParameterAttribute.cs" />
     <Compile Include="CommandAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

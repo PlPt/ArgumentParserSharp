@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace ArgumentParser
 {
     [AttributeUsage(AttributeTargets.Parameter)]
-    class ParameterAttribute : Attribute
+   public  class ParameterAttribute : Attribute
     {
         public string Command { get; set; }
-        public long MaxValue { get; set; }
-        public long MinValue { get; set; }
+        public long MaxValue { get; set; } = long.MaxValue;
+        public long MinValue { get; set; } = long.MinValue;
         public int ArrayLenght { get; set; }
 
     }

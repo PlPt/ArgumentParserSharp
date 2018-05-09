@@ -17,10 +17,10 @@ namespace ArgumentParserTest
             Console.ReadLine();
         }
 
-        [Command(Command ="test (.*);(\\d+)",Description ="test method")]
-        public string Test(string input,int i)
+        [Command(Command ="test (.*);(\\d)(\\d)",Description ="test method")]
+        public string Test(string input,[Parameter(ArrayLenght =2)]int[] i)
         {
-            return input + ": " + i;
+            return input + ": " + i[0] + " " + i[1];
         }
     }
 }

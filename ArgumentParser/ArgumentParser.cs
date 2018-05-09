@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -27,7 +28,7 @@ namespace ArgumentParser
         {
             MethodInfo meth = GetMatchingMethod(command);
 
-            if(meth == null)
+            if (meth == null)
             {
                 return default(T);
             }
@@ -46,24 +47,70 @@ namespace ArgumentParser
             var groups = match.Groups;
             var param = meth.GetParameters();
 
-            if(groups.Count - 1 != param.Length)
+          /*  if (groups.Count - 1 != param.Length)
             {
                 return default(T);
-            }
+            }*/
 
-            int idx = 1;
+            int idx = 0;
             object[] parameters = new object[param.Length];
-            foreach(var p in param)
+            foreach (var p in param)
             {
-                parameters[idx - 1] = ParseValue(groups[idx].Value, p.ParameterType);
+
+                if (p.ParameterType.IsArray)
+                {
+                    parameters[idx] = ParseArray(groups, p,ref idx);
+                }
+                else
+                {
+                    parameters[idx] = ParseValue(groups[idx + 1].Value, p.ParameterType);
+
+                    ValidateParameterRestrictions(parameters[idx], p);
+                }
+
                 idx++;
 
             }
 
 
-          return   (T)meth.Invoke(this.argumentObject, parameters);
+            return (T)meth.Invoke(this.argumentObject, parameters);
 
             //return "";
+        }
+        #endregion
+
+        #region ValidateParameterRestrictions
+        private static void ValidateParameterRestrictions(object input, ParameterInfo p)
+        {
+            ParameterAttribute parameterAttribute = p.GetCustomAttribute<ParameterAttribute>();
+            if (parameterAttribute != null && input.IsNumericType())
+            {
+                if (Convert.ToDecimal(input) > parameterAttribute.MaxValue)
+                {
+                    throw new ArgumentParserException(string.Format("Given parameter '{0}' is greater than defined MaxValue {1}", input, parameterAttribute.MaxValue));
+                }
+                else if (Convert.ToDecimal(input) < parameterAttribute.MinValue)
+                {
+                    throw new ArgumentParserException(string.Format("Given parameter '{0}' is smaller than defined MinValue {1}", input, parameterAttribute.MinValue));
+                }
+            }
+        }
+        #endregion
+
+
+        #region ParseArray
+        private object ParseArray(GroupCollection value, ParameterInfo p,ref int idx)
+        {
+            ParameterAttribute parameterAttribute = p.GetCustomAttribute<ParameterAttribute>();
+            ArrayList list = new ArrayList();            
+            for (int i = 0; i < parameterAttribute.ArrayLenght; i++)
+            {
+                object parsedValue = ParseValue(value[idx + i + 1].Value, p.ParameterType.GetElementType());
+                ValidateParameterRestrictions(parsedValue, p);
+                list.Add(parsedValue);
+            }
+            idx += parameterAttribute.ArrayLenght;            
+            return (object)list.ToArray(p.ParameterType.GetElementType());            
         }
         #endregion
 
@@ -98,7 +145,7 @@ namespace ArgumentParser
         #endregion
 
         #region ParseValue
-        private object ParseValue(string input,Type destinationType)
+        private object ParseValue(string input, Type destinationType)
         {
             object parsedValue = null;
             var ts = new TypeSwitch()
@@ -110,7 +157,7 @@ namespace ArgumentParser
                   .Case<double>((string x) => { return double.Parse(x); })
                   .Case<decimal>((string x) => { return decimal.Parse(x); });
 
-            parsedValue =  ts.Switch(destinationType,input);
+            parsedValue = ts.Switch(destinationType, input);
 
             return parsedValue;
         }
@@ -120,9 +167,33 @@ namespace ArgumentParser
 
     public class TypeSwitch
     {
-        
-        Dictionary<Type, Func<string,object>> matches = new Dictionary<Type, Func<string,object>>();
-        public TypeSwitch Case<T>(Func<string,object> action) { matches.Add(typeof(T), (x) => { return action(x); }); return this; }
-        public object Switch(Type x,string input) { return  matches[x](input); }
+
+        Dictionary<Type, Func<string, object>> matches = new Dictionary<Type, Func<string, object>>();
+        public TypeSwitch Case<T>(Func<string, object> action) { matches.Add(typeof(T), (x) => { return action(x); }); return this; }
+        public object Switch(Type x, string input) { return matches[x](input); }
+    }
+
+    public static class Helper
+    {
+        public static bool IsNumericType(this object o)
+        {
+            switch (Type.GetTypeCode(o.GetType()))
+            {
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Single:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 }
