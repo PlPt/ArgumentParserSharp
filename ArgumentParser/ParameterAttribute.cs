@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace ArgumentParser
 {
+
+    /// <summary>
+    /// PArameterAttribute as ParameterDefinition for Parser
+    /// </summary>
     [AttributeUsage(AttributeTargets.Parameter)]
    public  class ParameterInfoAttribute : Attribute
     {

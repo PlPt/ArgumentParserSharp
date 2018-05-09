@@ -93,6 +93,11 @@ namespace ArgumentParser
         #endregion
 
         #region ValidateParameterRestrictions
+        /// <summary>
+        /// Validates an input object if it fullfills the definition of a parameterInfo
+        /// </summary>
+        /// <param name="input">Object to validate</param>
+        /// <param name="p">ParameterInfo definition</param>
         private static void ValidateParameterRestrictions(object input, ParameterInfo p)
         {
             ParameterInfoAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttribute>();
@@ -112,6 +117,14 @@ namespace ArgumentParser
 
 
         #region ParseArray
+        /// <summary>
+        /// Parses given Values from RegEx GroupCollection as typed array
+        /// </summary>
+        /// <param name="value">GroupCollectionValues</param>
+        /// <param name="p">ParameterInfoAttibute of Array</param>
+        /// <param name="idx">Index of GroupItem</param>
+        /// <param name="groupOffset">GroupOffset dto increase</param>
+        /// <returns>typed array boxed in an object</returns>
         private object ParseArray(GroupCollection value, ParameterInfo p,int idx,ref int groupOffset)
         {
             ParameterInfoAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttribute>();
@@ -128,6 +141,11 @@ namespace ArgumentParser
         #endregion
 
         #region GetMatchingMethod
+        /// <summary>
+        /// Returns the Method with correspoding CommandAttribute definition
+        /// </summary>
+        /// <param name="command">Command to check definitions for</param>
+        /// <returns>MethodInfo of Method to invoke</returns>
         private MethodInfo GetMatchingMethod(string command)
         {
             var i = argumentObject.GetType().GetMethods();
@@ -158,6 +176,12 @@ namespace ArgumentParser
         #endregion
 
         #region ParseValue
+        /// <summary>
+        /// Parses given Sttring input to given destination Type
+        /// </summary>
+        /// <param name="input">String representation of Type</param>
+        /// <param name="destinationType">Typte to wich the string should parsed</param>
+        /// <returns>strongliy typed value boxed in an object</returns>
         private object ParseValue(string input, Type destinationType)
         {
             object parsedValue = null;

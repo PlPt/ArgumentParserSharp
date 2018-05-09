@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace ArgumentParser
 {
-    class ArgumentParserException : Exception
+    /// <summary>
+    /// Custom Exception for CommandParser Errors
+    /// </summary>
+ public class ArgumentParserException : Exception
     {
+        #region ctor
         public ArgumentParserException(string message) : base(message)
         {
 
@@ -17,5 +21,6 @@ namespace ArgumentParser
         {
           
         }
+        #endregion
     }
 }
