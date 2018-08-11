@@ -13,10 +13,25 @@ namespace ArgumentParser
     [AttributeUsage(AttributeTargets.Parameter)]
    public  class ParameterInfoAttribute : Attribute
     {
+        /// <summary>
+        /// Command Pattern for a specifc Parameter
+        /// </summary>
         public string Command { get; set; }
+
+        /// <summary>
+        /// MaxValue for ParameterRange
+        /// </summary>
         public long MaxValue { get; set; } = long.MaxValue;
+
+        /// <summary>
+        /// MinValue for Parameter Range
+        /// </summary>
         public long MinValue { get; set; } = long.MinValue;
-        public int ArrayLenght { get; set; }
+
+        /// <summary>
+        /// Length of array (pre defined for index)
+        /// </summary>
+        public int ArrayLength{ get; set; }
 
     }
 }
