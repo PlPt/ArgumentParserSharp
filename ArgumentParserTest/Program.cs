@@ -27,7 +27,7 @@ namespace ArgumentParserTest
         }
 
         [Command(Command = @"LUMI(\d)/STATUS", Description = "test method")]
-        public void LumiStatus(int lumiId, string message, DateTime tObj)
+        public void LumiStatus(int lumiId, string message, ArgumentParcableObjectTest tObj)
         {
 
             Console.WriteLine("Lumi: {0} -- {1}", lumiId, message);
