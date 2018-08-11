@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -112,6 +113,16 @@ namespace ArgumentParser
 
             return (T)meth.Invoke(this.argumentObject, parameters);
         }
+
+        // <summary>
+        /// Parse Method without generic Return value
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="args"></param>
+        public void Parse(string command,params object[] args)
+        {
+            this.Parse<string>(command, args);
+        }
         #endregion
 
         #region ValidateParameterRestrictions
@@ -200,10 +211,11 @@ namespace ArgumentParser
         #region ParseValue
         /// <summary>
         /// Parses given String input to given destination Type
+        /// If destination type is not numeric/primitive/.net Parsable (e.g. DateTime etc.) then an new Instance with string parameter constructor will be created (when available)
         /// </summary>
         /// <param name="input">String representation of Type</param>
         /// <param name="destinationType">Typte to wich the string should parsed</param>
-        /// <returns>strongliy typed value boxed in an object</returns>
+        /// <returns>strongly typed value boxed in an object</returns>
         private object ParseValue(string input, Type destinationType)
         {
             object parsedValue = null;
@@ -214,9 +226,38 @@ namespace ArgumentParser
                   .Case<long>((string x) => { return long.Parse(x); })
                   .Case<float>((string x) => { return float.Parse(x); })
                   .Case<double>((string x) => { return double.Parse(x); })
-                  .Case<decimal>((string x) => { return decimal.Parse(x); });
+                  .Case<decimal>((string x) => { return decimal.Parse(x); })
+                  .Case<DateTime>((string x) => { return DateTime.Parse(x); })
+                  .Case<TimeSpan>((string x) => { return TimeSpan.Parse(x); })
+                  .Case<Color>((string x) =>
+                  {
+                      if (x.StartsWith("#"))
+                      {
+                          return System.Drawing.ColorTranslator.FromHtml(x);
+                      }
+                      return Color.FromName(x);
+                  });
+            
 
-            parsedValue = ts.Switch(destinationType, input);
+
+            if (ts.ContainsType(destinationType))
+            {
+                
+                parsedValue = ts.Switch(destinationType, input);
+            }
+            else if (input is object)
+            {
+                var stringConstructor = destinationType.GetConstructor(new Type[] { typeof(string) });
+
+                if (stringConstructor != null)
+                {
+                    parsedValue = Activator.CreateInstance(destinationType, new string[] { input });
+                }
+                else
+                {
+                    throw new ArgumentParserException(string.Format("The DestinationType '{0}' does not provide a construcotr with only one string parameter", destinationType.Name));
+                }
+            }
 
             return parsedValue;
         }

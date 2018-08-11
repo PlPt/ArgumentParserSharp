@@ -14,30 +14,29 @@ namespace ArgumentParserTest
             ArgumentParser.ArgumentParser argument = new ArgumentParser.ArgumentParser(new Program());
 
 
-            argument.Parse<string>(@"LUMI1/STATUS","LUMI_1_STATUSPACKAGE",new List<int>());
+            argument.Parse(@"LUMI1/STATUS", "LUMI_1_STATUSPACKAGE", "31.07.2018 10:10:10");
             Console.ReadLine();
-            argument.Parse<string>(@"LUMI2/STATUS", "LUMI_2_STATUSPACKAGE", new List<int>());
+            argument.Parse(@"LUMI2/STATUS", "LUMI_2_STATUSPACKAGE", "31.07.2018 14:14:14");
             Console.ReadLine();
-            argument.Parse<string>(@"MULTI/U", "2014,56");
+            argument.Parse(@"MULTI/U", "2014,56");
             Console.ReadLine();
-            argument.Parse<string>(@"MULTI/I", "1,234");
+            argument.Parse(@"MULTI/I", "1,234");
 
 
             Console.ReadLine();
         }
 
-        [Command(Command = @"LUMI(\d)/STATUS", Description ="test method")]
-        public void LumiStatus(int lumiId,string message,List<int> ll)
+        [Command(Command = @"LUMI(\d)/STATUS", Description = "test method")]
+        public void LumiStatus(int lumiId, string message, DateTime tObj)
         {
 
-
-            Console.WriteLine("Lumi: {0} -- {1}",lumiId,message);
+            Console.WriteLine("Lumi: {0} -- {1}", lumiId, message);
         }
 
         [Command(Command = @"MULTI/U", Description = "test method")]
         public void MultiU(float message)
         {
-            Console.WriteLine( message);
+            Console.WriteLine(message);
         }
 
         [Command(Command = @"MULTI/I", Description = "test method")]
