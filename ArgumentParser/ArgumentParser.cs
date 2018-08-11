@@ -34,11 +34,13 @@ namespace ArgumentParser
         #region Parse
         /// <summary>
         /// Parses an generic String command and executes the defined Method behind
+        /// args params for paremeters which can not pared by regex, will be passed to the method call
         /// </summary>
         /// <typeparam name="T">Type of Returnobject</typeparam>
         /// <param name="command">Command input for parse</param>
+        /// <param name="args">Optional Arguments for Runtime Method, can be declaed typed in the destination method</param>
         /// <returns></returns>
-        public T Parse<T>(string command)
+        public T Parse<T>(string command, params object[] args)
         {
             MethodInfo meth = GetMatchingMethod(command);
 
@@ -61,7 +63,7 @@ namespace ArgumentParser
             var groups = match.Groups;
             var param = meth.GetParameters();
 
-            if (groups.Count - 1 != param.Length && !param.Any(p=>p.ParameterType.IsArray))
+            if (groups.Count - 1 + args.Length != param.Length && !param.Any(p => p.ParameterType.IsArray)) //Check if number of params matches
             {
                 return default(T);
             }
@@ -71,16 +73,36 @@ namespace ArgumentParser
             object[] parameters = new object[param.Length];
             foreach (var p in param)
             {
-
-                if (p.ParameterType.IsArray)
+                int currentOffset = idx + groupOffset + 1;
+                if (groups.Count > currentOffset) //If param is from regex
                 {
-                    parameters[idx] = ParseArray(groups, p,idx,ref groupOffset);
+
+                    if (p.ParameterType.IsArray)
+                    {
+                        parameters[idx] = ParseArray(groups, p, idx, ref groupOffset);
+                    }
+                    else
+                    {
+                        parameters[idx] = ParseValue(groups[currentOffset].Value, p.ParameterType);
+
+                        ValidateParameterRestrictions(parameters[idx], p);
+                    }
+                }
+                else if (args.Length > currentOffset - groups.Count)
+                {
+                    if (args[currentOffset - groups.Count] is string)
+                    {
+                        parameters[idx] = ParseValue(args[currentOffset - groups.Count].ToString(), p.ParameterType);
+                    }
+                    else
+                    {
+                        parameters[idx] = args[currentOffset - groups.Count];
+                    }
+
                 }
                 else
                 {
-                    parameters[idx] = ParseValue(groups[idx+ groupOffset + 1].Value, p.ParameterType);
-
-                    ValidateParameterRestrictions(parameters[idx], p);
+                    throw new ArgumentParserException("The auto choosen method expects non regex parameters which are not given in curren context");
                 }
 
                 idx++;
@@ -88,7 +110,7 @@ namespace ArgumentParser
             }
 
 
-            return (T)meth.Invoke(this.argumentObject, parameters);        
+            return (T)meth.Invoke(this.argumentObject, parameters);
         }
         #endregion
 
@@ -125,18 +147,18 @@ namespace ArgumentParser
         /// <param name="idx">Index of GroupItem</param>
         /// <param name="groupOffset">GroupOffset dto increase</param>
         /// <returns>typed array boxed in an object</returns>
-        private object ParseArray(GroupCollection value, ParameterInfo p,int idx,ref int groupOffset)
+        private object ParseArray(GroupCollection value, ParameterInfo p, int idx, ref int groupOffset)
         {
             ParameterInfoAttribute parameterAttribute = p.GetCustomAttribute<ParameterInfoAttribute>();
-            ArrayList list = new ArrayList();            
-            for (int i = 0; i < parameterAttribute.ArrayLenght; i++)
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < parameterAttribute.ArrayLength; i++)
             {
                 object parsedValue = ParseValue(value[idx + i + 1].Value, p.ParameterType.GetElementType());
                 ValidateParameterRestrictions(parsedValue, p);
                 list.Add(parsedValue);
             }
-            groupOffset += parameterAttribute.ArrayLenght-1;            
-            return (object)list.ToArray(p.ParameterType.GetElementType());            
+            groupOffset += parameterAttribute.ArrayLength - 1;
+            return (object)list.ToArray(p.ParameterType.GetElementType());
         }
         #endregion
 
@@ -177,7 +199,7 @@ namespace ArgumentParser
 
         #region ParseValue
         /// <summary>
-        /// Parses given Sttring input to given destination Type
+        /// Parses given String input to given destination Type
         /// </summary>
         /// <param name="input">String representation of Type</param>
         /// <param name="destinationType">Typte to wich the string should parsed</param>
